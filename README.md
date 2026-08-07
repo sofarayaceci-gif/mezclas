@@ -85,7 +85,7 @@ administrar: la app trae adentro la misma clave pública que `js/nube.js` de rep
 ### Lo único que hay que hacer una vez
 
 Abrir el panel de Supabase → **SQL Editor** → **New query** → pegar todo el contenido
-de `supabase/esquema.sql` → **Run**.
+de `esquema.sql` → **Run**.
 
 Mientras eso no se corra, la app funciona igual pero muestra *"Falta la tabla en
 Supabase"* en el historial.
@@ -109,10 +109,18 @@ Supabase"* en el historial.
 
 ### Respaldo
 
-**Exportar a Excel** genera un `.csv` con separador `;` y decimales con coma, que es
-como lo abre Excel con configuración regional de Costa Rica. Si al abrirlo los números
-salen en una sola columna o corridos, hay que cambiar esos dos detalles en la función
-`exportar()` de `index.html`.
+**Exportar a Excel** genera un `.xlsx` de verdad, armado con la misma forma del Excel
+original: los rótulos fijos en la columna A y **una columna por mezcla** a partir de
+la B, creciendo hacia la derecha. Lleva los mismos colores de la hoja original
+—amarillo en las concentraciones y litros deseados, naranja claro en los litros
+actuales, gris en número y fecha, celeste en los resultados— y los mismos formatos de
+número. La columna A queda inmovilizada para poder desplazarse a la derecha sin perder
+de vista los rótulos.
+
+Se genera sin librerías. Un `.xlsx` por dentro es un zip con unos XML, y el código los
+arma a mano: el zip está en la función `zip()`, los estilos en la constante `ESTILOS`,
+y la estructura de la hoja en `FILAS_XLSX`. Para agregar o mover una fila de la hoja
+basta con tocar ese arreglo.
 
 Ese archivo es el respaldo de verdad. Conviene bajarlo cada cierto tiempo.
 
@@ -124,8 +132,8 @@ público: cualquiera que la encuentre puede leer, cambiar y borrar las mezclas.
 
 Se acepta ese riesgo porque son datos de proceso —no datos personales ni contraseñas—,
 porque cada aparato conserva su copia completa, y porque el `.csv` exportado es el
-respaldo real. Si algún día se quiere cerrar, al final de `supabase/esquema.sql` está
-anotado cómo.
+respaldo real. Si algún día se quiere cerrar, al final de `esquema.sql` está anotado
+cómo.
 
 La clave que empieza con `sb_secret_` **no va** en este repositorio ni en ningún
 archivo de la app.
@@ -157,7 +165,7 @@ revisarlas:
 index.html             La app completa: HTML, CSS y JavaScript en un solo
                        archivo. Sin librerías y sin build. Funciona sin
                        internet; la nube solo la usa para sincronizar.
-supabase/esquema.sql   La tabla `mezclas`. Se corre una vez en el panel de
+esquema.sql            La tabla `mezclas`. Se corre una vez en el panel de
                        Supabase, en el mismo proyecto que la app de reportes.
 README.md              Este archivo.
 ```

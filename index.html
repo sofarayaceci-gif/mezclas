@@ -994,60 +994,280 @@ function pintarNube(){
   punto.setAttribute("aria-label", "Sincronización: " + detalle);
 }
 
-/* ───────── Exportar ─────────
-   CSV con separador ";" y decimales con coma, que es como lo abre
-   Excel con configuración regional de Costa Rica.                  */
+/* ════════════════════════════════════════════════════════════════
+   Exportar a Excel
+
+   Genera un .xlsx de verdad, con los mismos colores, formatos de
+   número y estructura del Excel original. Sin librerías: un .xlsx
+   por dentro es un zip con unos cuantos XML, y acá se arman a mano.
+
+   La hoja es el mismo formulario del original pero creciendo hacia
+   la derecha: los rótulos fijos en la columna A, y una columna por
+   mezcla a partir de la B.
+   ════════════════════════════════════════════════════════════════ */
+
+/* ── Zip ─────────────────────────────────────────────────────────
+   Se guarda sin comprimir (método «store»). Son unos pocos KB de
+   XML, así que no vale la pena meter un compresor: el archivo abre
+   igual en Excel.                                                 */
+
+const TABLA_CRC = (() => {
+  const t = new Uint32Array(256);
+  for (let n = 0; n < 256; n++){
+    let c = n;
+    for (let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+    t[n] = c >>> 0;
+  }
+  return t;
+})();
+
+function crc32(bytes){
+  let c = 0xFFFFFFFF;
+  for (let i = 0; i < bytes.length; i++) c = TABLA_CRC[(c ^ bytes[i]) & 0xFF] ^ (c >>> 8);
+  return (c ^ 0xFFFFFFFF) >>> 0;
+}
+
+function zip(archivos){
+  const cod = new TextEncoder();
+  const trozos = [];
+  const central = [];
+  let desplazamiento = 0;
+
+  archivos.forEach(a => {
+    const nombre = cod.encode(a.nombre);
+    const datos  = cod.encode(a.contenido);
+    const suma   = crc32(datos);
+    const tam    = datos.length;
+
+    const local = new Uint8Array(30 + nombre.length);
+    const dv = new DataView(local.buffer);
+    dv.setUint32(0, 0x04034b50, true);   // firma
+    dv.setUint16(4, 20, true);           // versión necesaria
+    dv.setUint32(14, suma, true);
+    dv.setUint32(18, tam, true);         // tamaño comprimido
+    dv.setUint32(22, tam, true);         // tamaño real
+    dv.setUint16(26, nombre.length, true);
+    local.set(nombre, 30);
+
+    trozos.push(local, datos);
+
+    const cen = new Uint8Array(46 + nombre.length);
+    const dc = new DataView(cen.buffer);
+    dc.setUint32(0, 0x02014b50, true);   // firma
+    dc.setUint16(4, 20, true);           // versión que lo creó
+    dc.setUint16(6, 20, true);           // versión necesaria
+    dc.setUint32(16, suma, true);
+    dc.setUint32(20, tam, true);
+    dc.setUint32(24, tam, true);
+    dc.setUint16(28, nombre.length, true);
+    dc.setUint32(42, desplazamiento, true);
+    cen.set(nombre, 46);
+    central.push(cen);
+
+    desplazamiento += local.length + tam;
+  });
+
+  const tamCentral = central.reduce((s, c) => s + c.length, 0);
+  const fin = new Uint8Array(22);
+  const df = new DataView(fin.buffer);
+  df.setUint32(0, 0x06054b50, true);
+  df.setUint16(8,  archivos.length, true);
+  df.setUint16(10, archivos.length, true);
+  df.setUint32(12, tamCentral, true);
+  df.setUint32(16, desplazamiento, true);
+
+  return new Blob(trozos.concat(central, [fin]), {
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  });
+}
+
+/* ── Piezas del .xlsx ──────────────────────────────────────────── */
+
+const xml = s => String(s).replace(/[&<>"]/g,
+  c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+/* Excel cuenta los días desde el 30-12-1899. */
+function serieExcel(iso){
+  const [a, m, d] = iso.split("-").map(Number);
+  return Date.UTC(a, m - 1, d) / 86400000 + 25569;
+}
+
+/* Letra de columna: 1→A, 2→B, 27→AA… */
+function letraCol(n){
+  let s = "";
+  while (n > 0){
+    const r = (n - 1) % 26;
+    s = String.fromCharCode(65 + r) + s;
+    n = Math.floor((n - 1) / 26);
+  }
+  return s;
+}
+
+/* Los colores son los mismos del Excel original: el gris y el naranja
+   venían por tema, así que acá van ya resueltos a su valor final. */
+const ESTILOS = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+<numFmts count="2">
+<numFmt numFmtId="164" formatCode="dd\\-mm\\-yy;@"/>
+<numFmt numFmtId="165" formatCode="0.0000"/>
+</numFmts>
+<fonts count="2">
+<font><sz val="11"/><color theme="1"/><name val="Calibri"/><family val="2"/><scheme val="minor"/></font>
+<font><b/><sz val="11"/><color theme="1"/><name val="Calibri"/><family val="2"/><scheme val="minor"/></font>
+</fonts>
+<fills count="6">
+<fill><patternFill patternType="none"/></fill>
+<fill><patternFill patternType="gray125"/></fill>
+<fill><patternFill patternType="solid"><fgColor rgb="FFBFBFBF"/><bgColor indexed="64"/></patternFill></fill>
+<fill><patternFill patternType="solid"><fgColor rgb="FFFFFF00"/><bgColor indexed="64"/></patternFill></fill>
+<fill><patternFill patternType="solid"><fgColor rgb="FFFAC090"/><bgColor indexed="64"/></patternFill></fill>
+<fill><patternFill patternType="solid"><fgColor rgb="FF00B0F0"/><bgColor indexed="64"/></patternFill></fill>
+</fills>
+<borders count="3">
+<border><left/><right/><top/><bottom/><diagonal/></border>
+<border><left style="thin"><color indexed="64"/></left><right style="thin"><color indexed="64"/></right><top style="thin"><color indexed="64"/></top><bottom style="thin"><color indexed="64"/></bottom><diagonal/></border>
+<border><left/><right/><top/><bottom style="thin"><color indexed="64"/></bottom><diagonal/></border>
+</borders>
+<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>
+<cellXfs count="12">
+<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>
+<xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/>
+<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0" applyAlignment="1"><alignment wrapText="1"/></xf>
+<xf numFmtId="0" fontId="0" fillId="2" borderId="1" xfId="0" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center"/></xf>
+<xf numFmtId="164" fontId="0" fillId="2" borderId="1" xfId="0" applyNumberFormat="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center"/></xf>
+<xf numFmtId="2" fontId="0" fillId="3" borderId="1" xfId="0" applyNumberFormat="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center"/></xf>
+<xf numFmtId="1" fontId="0" fillId="3" borderId="1" xfId="0" applyNumberFormat="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center"/></xf>
+<xf numFmtId="165" fontId="0" fillId="3" borderId="1" xfId="0" applyNumberFormat="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center"/></xf>
+<xf numFmtId="1" fontId="0" fillId="4" borderId="1" xfId="0" applyNumberFormat="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center"/></xf>
+<xf numFmtId="4" fontId="0" fillId="5" borderId="1" xfId="0" applyNumberFormat="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center"/></xf>
+<xf numFmtId="2" fontId="0" fillId="5" borderId="1" xfId="0" applyNumberFormat="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center"/></xf>
+<xf numFmtId="0" fontId="0" fillId="0" borderId="2" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="center"/></xf>
+</cellXfs>
+</styleSheet>`;
+
+/* Índices de `cellXfs`, con nombre para que se lea el código. */
+const E = {
+  NORMAL: 0, NEGRITA: 1, ROTULO: 2,
+  GRIS: 3, GRIS_FECHA: 4,
+  AMARILLO_2DEC: 5, AMARILLO_ENTERO: 6, AMARILLO_4DEC: 7,
+  NARANJA_ENTERO: 8,
+  CELESTE_MILES: 9, CELESTE_2DEC: 10,
+  SUBRAYADO: 11
+};
+
+/* La estructura de la hoja, en el mismo orden del Excel original.
+   `valor` saca el dato de cada mezcla; si no hay, la fila es un
+   título de sección o un espacio en blanco.                       */
+const FILAS_XLSX = [
+  { rotulo: "Número de Mezcla", estilo: E.GRIS,       valor: m => m.numero },
+  { rotulo: "Fecha",            estilo: E.GRIS_FECHA, valor: m => m.fecha, fecha: true },
+  {},
+  { titulo: "ORD-X170" },
+  { rotulo: "Concentración de ORD-X170 deseada",              estilo: E.AMARILLO_2DEC,   valor: m => m.concDeseada },
+  { rotulo: "Concentración de ORD-X170 Actual (De laboratorio)", estilo: E.AMARILLO_2DEC, valor: m => m.concActual },
+  { rotulo: "Litros de Solución en tanque Actual",            estilo: E.NARANJA_ENTERO,  valor: m => m.litrosActuales },
+  { rotulo: "Litros de Solución deseado en el tanque",        estilo: E.AMARILLO_ENTERO, valor: m => m.litrosDeseados },
+  { rotulo: "Densidad activa (KG/L)",                         estilo: E.AMARILLO_4DEC,   valor: m => m.densidad },
+  { rotulo: "Litros de ORD-X170 para Agregar",                estilo: E.CELESTE_MILES,   valor: m => m.litrosOrd },
+  { rotulo: "Kg a agregar",                                   estilo: E.CELESTE_MILES,   valor: m => m.kgOrd },
+  {},
+  { titulo: "Cleanwood AC y Cleanwood 45 Plus" },
+  { rotulo: "Factor de Depleción de los Cleanwoods",          estilo: E.SUBRAYADO,       valor: m => m.deplecion },
+  { rotulo: "Litros de Cleanwood AC para Agregar",            estilo: E.CELESTE_2DEC,    valor: m => m.ac },
+  { rotulo: "Litros de Cleanwood 45 Plus para Agregar",       estilo: E.CELESTE_2DEC,    valor: m => m.p45 }
+];
+
+function hojaXlsx(lista){
+  const filas = FILAS_XLSX.map((def, i) => {
+    const n = i + 1;
+    const celdas = [];
+
+    if (def.titulo){
+      celdas.push('<c r="A' + n + '" s="' + E.NEGRITA + '" t="inlineStr"><is><t>' +
+        xml(def.titulo) + "</t></is></c>");
+    } else if (def.rotulo){
+      celdas.push('<c r="A' + n + '" s="' + E.ROTULO + '" t="inlineStr"><is><t>' +
+        xml(def.rotulo) + "</t></is></c>");
+
+      lista.forEach((m, j) => {
+        const ref = letraCol(j + 2) + n;
+        const v = def.valor(m);
+
+        if (def.fecha){
+          celdas.push('<c r="' + ref + '" s="' + def.estilo + '"><v>' + serieExcel(v) + "</v></c>");
+        } else if (typeof v === "number" && Number.isFinite(v)){
+          celdas.push('<c r="' + ref + '" s="' + def.estilo + '"><v>' + v + "</v></c>");
+        } else if (v !== "" && Number.isFinite(Number(v))){
+          /* El número de mezcla llega como texto pero es un número. */
+          celdas.push('<c r="' + ref + '" s="' + def.estilo + '"><v>' + Number(v) + "</v></c>");
+        } else {
+          celdas.push('<c r="' + ref + '" s="' + def.estilo + '" t="inlineStr"><is><t>' +
+            xml(v) + "</t></is></c>");
+        }
+      });
+    }
+
+    return celdas.length ? '<row r="' + n + '">' + celdas.join("") + "</row>" : "";
+  }).join("");
+
+  const anchos = '<col min="1" max="1" width="42" customWidth="1"/>' +
+                 '<col min="2" max="' + Math.max(2, lista.length + 1) + '" width="13" customWidth="1"/>';
+
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+<sheetViews><sheetView tabSelected="1" workbookViewId="0">
+<pane xSplit="1" topLeftCell="B1" activePane="topRight" state="frozen"/>
+</sheetView></sheetViews>
+<sheetFormatPr defaultRowHeight="15"/>
+<cols>${anchos}</cols>
+<sheetData>${filas}</sheetData>
+</worksheet>`;
+}
+
 function exportar(){
   const lista = vivas().slice().sort((a, b) => cuando(a).localeCompare(cuando(b)));
   if (lista.length === 0) return;
 
-  const cols = [
-    "Nº de mezcla", "Fecha",
-    "Concentración de ORD-X170 deseada (%)",
-    "Concentración de ORD-X170 actual, laboratorio (%)",
-    "Litros de solución en tanque actual",
-    "Litros de solución deseado en el tanque",
-    "Litros agregados",
-    "Densidad activa (kg/L)",
-    "Factor de depleción de los Cleanwoods",
-    "Litros de ORD-X170 para agregar",
-    "Kg de ORD-X170 para agregar",
-    "Litros de Cleanwood AC para agregar",
-    "Litros de Cleanwood 45 Plus para agregar",
-    "Guardado"
+  const archivos = [
+    { nombre: "[Content_Types].xml", contenido: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+<Default Extension="xml" ContentType="application/xml"/>
+<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
+<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
+<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>
+</Types>` },
+
+    { nombre: "_rels/.rels", contenido: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>
+</Relationships>` },
+
+    { nombre: "xl/workbook.xml", contenido: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+<sheets><sheet name="Mezclas" sheetId="1" r:id="rId1"/></sheets>
+</workbook>` },
+
+    { nombre: "xl/_rels/workbook.xml.rels", contenido: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>
+<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
+</Relationships>` },
+
+    { nombre: "xl/styles.xml", contenido: ESTILOS },
+    { nombre: "xl/worksheets/sheet1.xml", contenido: hojaXlsx(lista) }
   ];
 
-  const txt = s => '"' + String(s).replace(/"/g, '""') + '"';
-
-  const filas = lista.map(m => [
-    txt(m.numero),
-    txt(fechaCorta(m.fecha)),
-    fmt(m.concDeseada, 2),
-    fmt(m.concActual, 2),
-    fmt(m.litrosActuales, 0),
-    fmt(m.litrosDeseados, 0),
-    fmt(m.litrosDeseados - m.litrosActuales, 0),
-    fmt(m.densidad, 4),
-    fmt(m.deplecion, 2),
-    fmt(m.litrosOrd, 2),
-    fmt(m.kgOrd, 2),
-    fmt(m.ac, 2),
-    fmt(m.p45, 2),
-    txt(new Date(m.guardado).toLocaleString("es-CR"))
-  ].join(";"));
-
-  const csv = "sep=;\n" + cols.map(txt).join(";") + "\n" + filas.join("\n");
-
-  const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement("a");
+  const url = URL.createObjectURL(zip(archivos));
+  const a = document.createElement("a");
   a.href = url;
-  a.download = "mezclas-micro-pro-" + fechaHoy() + ".csv";
+  a.download = "mezclas-micro-pro-" + fechaHoy() + ".xlsx";
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
   setTimeout(() => URL.revokeObjectURL(url), 1000);
-  toast("Archivo descargado");
+  toast(lista.length === 1 ? "Excel descargado · 1 mezcla"
+                           : "Excel descargado · " + lista.length + " mezclas");
 }
 
 /* ───────── Navegación ───────── */
