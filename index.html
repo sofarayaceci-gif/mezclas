@@ -1,0 +1,1135 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<title>Mezcla Micro Pro — Adelante Desarrollos</title>
+<style>
+:root{
+  --verde:#add010;
+  --verde-h:#9bbb0e;
+  --verde-t:#5b7005;
+  --verde-bg:#f4f9e0;
+  --blanco:#ffffff;
+  --g50:#f7f8f5;
+  --g100:#eff1eb;
+  --g200:#e3e6dd;
+  --g300:#cbcfc4;
+  --g500:#7b8078;
+  --g700:#43473f;
+  --g900:#1b1d19;
+  --rojo:#b53228;
+  --rojo-bg:#fdf1f0;
+  --ambar:#9a6400;
+  --ambar-bg:#fdf6e6;
+  --radio:12px;
+  --sombra:0 1px 2px rgba(27,29,25,.05), 0 1px 3px rgba(27,29,25,.05);
+}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  background:var(--g50);
+  color:var(--g900);
+  font-family:"Segoe UI",-apple-system,BlinkMacSystemFont,Roboto,Helvetica,Arial,sans-serif;
+  font-size:15px;
+  line-height:1.5;
+}
+button{font:inherit; color:inherit}
+
+/* ───────── Encabezado ───────── */
+.top{position:sticky; top:0; z-index:20; background:var(--blanco); border-bottom:1px solid var(--g200)}
+.top-in{max-width:1120px; margin:0 auto; padding:14px 20px 0; display:flex; flex-direction:column; gap:12px}
+.marca{display:flex; align-items:center; gap:11px}
+.logo{width:34px; height:34px; flex:none; border-radius:9px; background:var(--verde); display:grid; place-items:center}
+.marca h1{margin:0; font-size:16px; font-weight:650; letter-spacing:-.01em}
+.marca p{margin:1px 0 0; font-size:12px; color:var(--g500)}
+
+/* Estado de la sincronización: solo el color, sin texto.
+   El detalle va en el title, para quien pase el mouse por encima. */
+.titulo{display:flex; align-items:center; gap:9px}
+.punto{
+  width:9px; height:9px; flex:none;
+  border-radius:50%; background:var(--g300);
+  transition:background .25s;
+}
+.punto.bien{background:var(--verde)}
+.punto.mal{background:var(--rojo)}
+.punto.trabajando{background:var(--verde); animation:latido 1s ease-in-out infinite}
+@keyframes latido{50%{opacity:.2}}
+.tabs{display:flex}
+.tab{
+  appearance:none; border:0; background:none; cursor:pointer;
+  padding:9px 3px; margin-right:22px;
+  font-size:14px; font-weight:550; color:var(--g500);
+  border-bottom:2.5px solid transparent; transition:color .12s;
+}
+.tab:hover{color:var(--g900)}
+.tab[aria-selected="true"]{color:var(--g900); border-bottom-color:var(--verde)}
+.pill{
+  display:inline-block; margin-left:6px; padding:1px 7px; border-radius:999px;
+  background:var(--g100); color:var(--g500); font-size:11.5px; font-weight:600; vertical-align:1px;
+}
+.tab[aria-selected="true"] .pill{background:var(--verde-bg); color:var(--verde-t)}
+
+/* ───────── Estructura ───────── */
+main{max-width:1120px; margin:0 auto; padding:22px 20px 64px}
+.grid{display:grid; grid-template-columns:1fr 400px; gap:22px; align-items:start}
+@media (max-width:920px){ .grid{grid-template-columns:1fr; gap:18px} }
+
+.card{background:var(--blanco); border:1px solid var(--g200); border-radius:var(--radio); box-shadow:var(--sombra); margin-bottom:16px}
+.card > h2{
+  margin:0; padding:14px 18px;
+  font-size:12px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
+  color:var(--g500); border-bottom:1px solid var(--g100);
+}
+.card > h2 .et{
+  float:right; text-transform:none; letter-spacing:0; font-weight:500;
+  font-size:11.5px; color:var(--g300);
+}
+.card-body{padding:16px 18px}
+
+.campos{display:grid; grid-template-columns:1fr 1fr; gap:14px}
+.campos .ancho{grid-column:1 / -1}
+@media (max-width:540px){ .campos{grid-template-columns:1fr} }
+
+.campo label{display:block; margin-bottom:5px; font-size:13px; font-weight:550; color:var(--g700)}
+/* Notas que en el Excel estaban en negrita a la par de cada celda.
+   Compactas a propósito para no comerse pantalla en el celular.     */
+.ayuda{display:block; font-weight:400; color:var(--g500); font-size:11.5px; line-height:1.35; margin-top:2px}
+@media (max-width:540px){ .ayuda{font-size:11px; line-height:1.3} }
+.entrada{position:relative; display:flex; align-items:center}
+.entrada input{
+  width:100%; padding:9px 11px;
+  font:inherit; font-variant-numeric:tabular-nums;
+  color:var(--g900); background:var(--blanco);
+  border:1px solid var(--g300); border-radius:8px;
+  outline:none; transition:border-color .12s, box-shadow .12s;
+}
+.entrada input:focus{border-color:var(--verde); box-shadow:0 0 0 3px rgba(173,208,16,.22)}
+.entrada input.malo{border-color:var(--rojo); box-shadow:0 0 0 3px rgba(181,50,40,.12)}
+.entrada .unidad{position:absolute; right:11px; font-size:12.5px; color:var(--g500); pointer-events:none}
+.entrada:has(.unidad) input{padding-right:44px}
+
+.nota{
+  margin:14px 0 0; padding:9px 12px;
+  background:var(--g50); border:1px solid var(--g200); border-radius:8px;
+  font-size:13px; color:var(--g700);
+}
+.nota b{font-variant-numeric:tabular-nums; color:var(--g900)}
+.nota.aviso{background:var(--ambar-bg); border-color:#f0dfb8; color:var(--ambar)}
+.nota.aviso b{color:var(--ambar)}
+.nota.error{background:var(--rojo-bg); border-color:#f2d5d2; color:var(--rojo)}
+
+/* ───────── Resultados ───────── */
+.res-wrap{position:sticky; top:106px}
+@media (max-width:920px){ .res-wrap{position:static} }
+.res-card{background:var(--blanco); border:1px solid var(--g200); border-radius:var(--radio); box-shadow:var(--sombra); overflow:hidden}
+.res-card > h2{
+  margin:0; padding:14px 18px;
+  font-size:12px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
+  color:var(--g500); border-bottom:1px solid var(--g100);
+}
+.grupo{padding:7px 18px 6px; background:var(--g50); border-bottom:1px solid var(--g100)}
+.grupo span{font-size:11px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--g500)}
+.res{padding:15px 18px; border-bottom:1px solid var(--g100)}
+.res.principal{background:var(--verde-bg); box-shadow:inset 4px 0 0 var(--verde)}
+.res .nom{font-size:13px; font-weight:600; color:var(--g700); margin:0 0 6px}
+.res.principal .nom{color:var(--verde-t)}
+.res .nom .ayuda{color:var(--g500)}
+.res .sub .ayuda{display:inline; margin:0 5px 0 0; font-size:12.5px}
+.res .val{
+  font-size:30px; font-weight:680; letter-spacing:-.02em; line-height:1.1;
+  font-variant-numeric:tabular-nums; color:var(--g900);
+}
+.res .val small{font-size:15px; font-weight:600; color:var(--g500); margin-left:5px; letter-spacing:0}
+.res.principal .val{font-size:38px}
+.res .sub{margin:6px 0 0; font-size:13px; color:var(--g500); font-variant-numeric:tabular-nums}
+.res .val.neg{color:var(--rojo)}
+.res .val.vacio{color:var(--g300)}
+.secundarios{display:grid; grid-template-columns:1fr 1fr}
+.secundarios .res{border-right:1px solid var(--g100)}
+.secundarios .res:last-child{border-right:0}
+@media (max-width:440px){ .secundarios{grid-template-columns:1fr} .secundarios .res{border-right:0} }
+
+/* ───────── Botones ───────── */
+.acciones{display:flex; gap:9px; flex-wrap:wrap; padding:16px 18px; background:var(--g50); border-top:1px solid var(--g100)}
+.btn{
+  appearance:none; cursor:pointer; padding:9px 16px; border-radius:8px;
+  font-size:14px; font-weight:600;
+  border:1px solid var(--g300); background:var(--blanco); color:var(--g700);
+  transition:background .12s, border-color .12s, opacity .12s;
+}
+.btn:hover{background:var(--g100)}
+.btn.pri{background:var(--verde); border-color:var(--verde); color:#20280a; flex:1; min-width:150px}
+.btn.pri:hover{background:var(--verde-h); border-color:var(--verde-h)}
+.btn:disabled{opacity:.45; cursor:not-allowed}
+.btn:disabled:hover{background:var(--blanco)}
+.btn.pri:disabled:hover{background:var(--verde)}
+.btn.peligro{color:var(--rojo); border-color:#eccdca}
+.btn.peligro:hover{background:var(--rojo-bg)}
+
+/* ───────── Historial ───────── */
+.hist-top{display:flex; gap:9px; flex-wrap:wrap; align-items:center; margin-bottom:16px}
+.hist-top .cuenta{margin-right:auto; font-size:13.5px; color:var(--g500)}
+
+.tabla-wrap{overflow-x:auto; border-radius:var(--radio); border:1px solid var(--g200); background:var(--blanco)}
+table{border-collapse:collapse; width:100%; min-width:1000px; font-size:13.5px}
+th,td{padding:10px 12px; text-align:right; white-space:nowrap; border-bottom:1px solid var(--g100)}
+th:first-child,td:first-child,th:nth-child(2),td:nth-child(2){text-align:left}
+th{
+  position:sticky; top:0; background:var(--g50); color:var(--g500);
+  font-size:11.5px; font-weight:700; letter-spacing:.04em; text-transform:uppercase;
+  border-bottom:1px solid var(--g200);
+}
+td{font-variant-numeric:tabular-nums}
+tbody tr:hover{background:var(--g50)}
+tbody tr:last-child td{border-bottom:0}
+td.destac{font-weight:650; color:var(--verde-t)}
+td.acc{text-align:right; white-space:nowrap}
+.icono{
+  appearance:none; cursor:pointer; border:1px solid var(--g200); background:var(--blanco);
+  width:28px; height:28px; border-radius:6px; padding:0; margin-left:4px;
+  color:var(--g500); font-size:14px; line-height:1;
+}
+.icono:hover{background:var(--g100); color:var(--g900)}
+.icono.borrar:hover{background:var(--rojo-bg); border-color:#eccdca; color:var(--rojo)}
+.vacio-estado{padding:56px 20px; text-align:center; background:var(--blanco); border:1px dashed var(--g300); border-radius:var(--radio)}
+.vacio-estado p{margin:0; color:var(--g500); font-size:14px}
+.vacio-estado p.t{color:var(--g900); font-weight:600; font-size:15px; margin-bottom:5px}
+
+/* ───────── Varios ───────── */
+#toast{
+  position:fixed; left:50%; bottom:26px; transform:translate(-50%,14px);
+  background:var(--g900); color:var(--blanco);
+  padding:11px 18px; border-radius:9px; font-size:14px; font-weight:550;
+  box-shadow:0 6px 22px rgba(27,29,25,.25);
+  opacity:0; pointer-events:none; transition:opacity .18s, transform .18s;
+  z-index:60; max-width:90vw; text-align:center;
+}
+#toast.ver{opacity:1; transform:translate(-50%,0)}
+#sin-storage{
+  display:none; margin:16px auto 0; max-width:1120px;
+  padding:11px 16px; background:var(--ambar-bg); border:1px solid #f0dfb8;
+  border-radius:9px; color:var(--ambar); font-size:13px;
+}
+.oculto{display:none !important}
+.solo-impresion{display:none}
+
+/* ───────── Impresión ───────── */
+@media print{
+  @page{margin:15mm}
+  body{background:#fff; font-size:12px}
+  .top,.acciones,#toast,#sin-storage,.no-imprimir{display:none !important}
+  main{padding:0; max-width:none}
+  .grid{grid-template-columns:1fr; gap:10px}
+  .card,.res-card{box-shadow:none; border-color:#bbb; break-inside:avoid; margin-bottom:10px}
+  .res-wrap{position:static}
+  .res.principal{background:#fff}
+  .solo-impresion{display:block; margin:0 0 16px; padding-bottom:10px; border-bottom:2px solid var(--verde)}
+  .solo-impresion h1{margin:0; font-size:17px}
+  .solo-impresion p{margin:3px 0 0; font-size:11px; color:#555}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-in">
+    <div class="marca">
+      <div class="logo" aria-hidden="true">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#20280a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 3h6M10 3v6.5L5.4 17.8A2 2 0 0 0 7.1 21h9.8a2 2 0 0 0 1.7-3.2L14 9.5V3"/>
+          <path d="M7.6 14h8.8"/>
+        </svg>
+      </div>
+      <div>
+        <div class="titulo">
+          <h1>Mezcla Micro Pro</h1>
+          <span class="punto" id="nube-punto" role="status"></span>
+        </div>
+        <p>Adelante Desarrollos · Cálculo de litros para agregar</p>
+      </div>
+    </div>
+    <nav class="tabs" role="tablist">
+      <button class="tab" role="tab" id="tab-calc" aria-selected="true" aria-controls="v-calc">Calculadora</button>
+      <button class="tab" role="tab" id="tab-hist" aria-selected="false" aria-controls="v-hist">Historial<span class="pill" id="pill-hist">0</span></button>
+    </nav>
+  </div>
+</header>
+
+<div id="sin-storage">Este navegador no está guardando el historial. Los cálculos funcionan igual, pero exporte a Excel antes de cerrar.</div>
+
+<main>
+
+<!-- ══════════ CALCULADORA ══════════ -->
+<section id="v-calc" role="tabpanel" aria-labelledby="tab-calc">
+
+  <div class="solo-impresion">
+    <h1>Mezcla Micro Pro — Hoja de mezcla</h1>
+    <p>Adelante Desarrollos</p>
+  </div>
+
+  <div class="grid">
+
+    <!-- ── Datos que se digitan ── -->
+    <div>
+      <div class="card">
+        <h2>Datos generales</h2>
+        <div class="card-body">
+          <div class="campos">
+            <div class="campo">
+              <label for="i-num">Número de mezcla</label>
+              <div class="entrada"><input id="i-num" type="text" inputmode="numeric" autocomplete="off"></div>
+            </div>
+            <div class="campo">
+              <label for="i-fecha">Fecha</label>
+              <div class="entrada"><input id="i-fecha" type="date"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>ORD-X170</h2>
+        <div class="card-body">
+          <div class="campos">
+            <div class="campo">
+              <label for="i-cdes">Concentración deseada</label>
+              <div class="entrada"><input id="i-cdes" type="text" inputmode="decimal" autocomplete="off"><span class="unidad">%</span></div>
+              <span class="ayuda">Concentración deseada</span>
+            </div>
+            <div class="campo">
+              <label for="i-cact">Concentración actual</label>
+              <div class="entrada"><input id="i-cact" type="text" inputmode="decimal" autocomplete="off"><span class="unidad">%</span></div>
+              <span class="ayuda">Concentración actual, de laboratorio</span>
+            </div>
+            <div class="campo">
+              <label for="i-lact">Litros de solución en tanque actual</label>
+              <div class="entrada"><input id="i-lact" type="text" inputmode="decimal" autocomplete="off"><span class="unidad">L</span></div>
+              <span class="ayuda">Poner los litros que hay en tanque de solución</span>
+            </div>
+            <div class="campo">
+              <label for="i-ldes">Litros de solución deseado en el tanque</label>
+              <div class="entrada"><input id="i-ldes" type="text" inputmode="decimal" autocomplete="off"><span class="unidad">L</span></div>
+              <span class="ayuda">Litros deseados</span>
+            </div>
+            <div class="campo ancho">
+              <label for="i-dens">Densidad activa</label>
+              <div class="entrada"><input id="i-dens" type="text" inputmode="decimal" autocomplete="off"><span class="unidad">kg/L</span></div>
+            </div>
+          </div>
+          <p class="nota" id="nota-delta">Complete los litros para ver cuánta solución se agrega al tanque.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Cleanwood AC y Cleanwood 45 Plus</h2>
+        <div class="card-body">
+          <div class="campos">
+            <div class="campo ancho">
+              <label for="i-depl">Factor de depleción de los Cleanwoods</label>
+              <div class="entrada"><input id="i-depl" type="text" inputmode="decimal" autocomplete="off"></div>
+              <span class="ayuda">0.10 equivale a un 10 % adicional</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── Resultados ── -->
+    <div class="res-wrap">
+      <div class="res-card">
+        <h2>Para agregar</h2>
+
+        <div class="grupo"><span>ORD-X170</span></div>
+        <div class="res principal">
+          <p class="nom">Litros de ORD-X170 para agregar<span class="ayuda">Litros a agregar</span></p>
+          <div class="val vacio" id="r-ord">—<small>L</small></div>
+          <p class="sub" id="r-ordkg">Complete los datos</p>
+        </div>
+
+        <div class="grupo"><span>Cleanwood AC y Cleanwood 45 Plus</span></div>
+        <div class="secundarios">
+          <div class="res">
+            <p class="nom">Cleanwood AC</p>
+            <div class="val vacio" id="r-ac">—<small>L</small></div>
+            <p class="sub" id="r-acml">&nbsp;</p>
+          </div>
+          <div class="res">
+            <p class="nom">Cleanwood 45 Plus</p>
+            <div class="val vacio" id="r-p45">—<small>L</small></div>
+            <p class="sub" id="r-p45ml">&nbsp;</p>
+          </div>
+        </div>
+
+        <div id="avisos"></div>
+
+        <div class="acciones no-imprimir">
+          <button class="btn pri" id="b-guardar" disabled>Guardar mezcla</button>
+          <button class="btn" id="b-limpiar">Limpiar</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════ HISTORIAL ══════════ -->
+<section id="v-hist" role="tabpanel" aria-labelledby="tab-hist" class="oculto">
+  <div class="hist-top">
+    <span class="cuenta" id="hist-cuenta"></span>
+    <button class="btn" id="b-exportar">Exportar a Excel</button>
+    <button class="btn peligro" id="b-borrar-todo">Borrar historial</button>
+  </div>
+
+  <div id="hist-contenido"></div>
+</section>
+
+</main>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+
+/* ════════════════════════════════════════════════════════════════
+   Mezcla Micro Pro — conversión directa del Excel original.
+
+   Regla: toda celda del Excel que NO tenía fórmula es un campo
+   manual. Las celdas con fórmula se calculan aquí.
+
+   Manuales : Nº de mezcla, concentración deseada, concentración
+              actual (laboratorio), litros actuales, litros deseados,
+              densidad activa, factor de depleción.
+   Calculados: litros de ORD-X170, kg de ORD-X170, litros de
+              Cleanwood AC, litros de Cleanwood 45 Plus.
+   La fecha era =NOW(), así que se llena sola (y se puede cambiar).
+   ════════════════════════════════════════════════════════════════ */
+
+/* Números que estaban escritos dentro de las fórmulas del Excel. */
+const K = {
+  ORD_DIVISOR : 0.608,
+  ORD_MARGEN  : 1.03,
+  AC_PPM      : 45,
+  AC_RIQUEZA  : 0.1757,
+  P45_PPM     : 100,
+  P45_RIQUEZA : 0.4718,
+  MILLON      : 1000000
+};
+
+/* Valores con que venía el Excel; solo se usan para prellenar. */
+const INICIALES = { densidad: "0.6088", deplecion: "0.1" };
+
+const LLAVE_MEZCLAS = "mmp.mezclas.v1";
+const LLAVE_ULTIMOS = "mmp.ultimos.v1";
+
+/* ───────── Utilidades ───────── */
+
+const $ = id => document.getElementById(id);
+
+/** Acepta coma o punto como separador decimal. */
+function num(v){
+  if (v === null || v === undefined) return NaN;
+  const s = String(v).trim().replace(/\s+/g, "").replace(",", ".");
+  if (s === "") return NaN;
+  const n = Number(s);
+  return Number.isFinite(n) ? n : NaN;
+}
+
+const fmt = (n, dec = 2) =>
+  n.toLocaleString("es-CR", { minimumFractionDigits: dec, maximumFractionDigits: dec });
+
+function fechaHoy(){
+  const d = new Date();
+  const p = x => String(x).padStart(2, "0");
+  return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate());
+}
+
+function fechaCorta(iso){
+  if (!iso) return "";
+  const [a, m, d] = iso.split("-");
+  return d + "-" + m + "-" + a.slice(2);
+}
+
+let toastTimer = null;
+function toast(msg){
+  const t = $("toast");
+  t.textContent = msg;
+  t.classList.add("ver");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("ver"), 2400);
+}
+
+/* ───────── Almacenamiento ───────── */
+
+let storageOk = true;
+
+function leer(llave, porDefecto){
+  try {
+    const raw = localStorage.getItem(llave);
+    return raw ? JSON.parse(raw) : porDefecto;
+  } catch (e) {
+    storageOk = false;
+    return porDefecto;
+  }
+}
+
+function escribir(llave, valor){
+  try {
+    localStorage.setItem(llave, JSON.stringify(valor));
+    return true;
+  } catch (e) {
+    storageOk = false;
+    $("sin-storage").style.display = "block";
+    return false;
+  }
+}
+
+/* `mezclas` guarda TODO, incluidas las borradas (marcadas con
+   borrado:true). Se conservan como lápida para que al sincronizar no
+   revivan desde otro dispositivo. La pantalla solo muestra `vivas()`. */
+let mezclas = leer(LLAVE_MEZCLAS, []);
+if (!Array.isArray(mezclas)) mezclas = [];
+const ultimos = leer(LLAVE_ULTIMOS, {});
+if (!storageOk) $("sin-storage").style.display = "block";
+
+const vivas = () => mezclas.filter(m => !m.borrado);
+
+/* Cuándo se tocó por última vez. Es lo que decide cuál gana al fusionar.
+   Las mezclas guardadas antes de que existiera `tocado` caen en `guardado`. */
+const cuando = m => m.tocado || m.guardado || "";
+
+/* ───────── Nube (Supabase) ─────────
+   Es el MISMO proyecto de Supabase que usa la app de reportes, con una tabla
+   nueva: `mezclas`. Por eso no hay nada que configurar acá; solo hay que
+   correr una vez `supabase/esquema.sql` desde el panel.
+
+   ⚠️ La clave de abajo es la pública de Supabase, la misma de reportes. Viaja
+   dentro de la página, así que cualquiera que abra la app —o que mire el
+   repositorio, que es público— la puede leer. Como esto va sin login, esa
+   clave es lo único que hay entre los datos y el mundo, y no alcanza: quien la
+   tenga puede leer, cambiar y borrar las mezclas.
+
+   Se acepta el mismo riesgo que ya se aceptó en reportes: son datos de
+   proceso, no datos personales ni contraseñas; cada aparato conserva su copia
+   completa; y el .csv que exporta la app es el respaldo de verdad.
+
+   ⚠️ La clave que empieza con «sb_secret_» NO va acá ni en ningún otro
+   archivo. Esa se salta hasta las reglas de la base.                         */
+
+const URL_BASE      = "https://vlbrnrjdqzjwegcakguo.supabase.co";
+const CLAVE_PUBLICA = "sb_publishable_Qz7jMd4dYIJRSHVS-OiBuw_IAdMddoX";
+
+function mensajeDeError(cuerpo, estado){
+  const crudo = String((cuerpo && (cuerpo.msg || cuerpo.message ||
+    cuerpo.error_description || cuerpo.error || cuerpo.hint)) || "");
+
+  if (/could not find the table|PGRST205/i.test(crudo)){
+    return "Falta la tabla en Supabase. Hay que correr supabase/esquema.sql.";
+  }
+  if (/invalid api key/i.test(crudo)){
+    return "La clave de la nube no sirve. Revisar CLAVE_PUBLICA en index.html.";
+  }
+  if (estado === 401 || estado === 403){
+    return "La nube no dejó pasar. Revisar las reglas de acceso del esquema.";
+  }
+  if (crudo) return crudo;
+  return "La nube respondió con un error (" + estado + ").";
+}
+
+/* Un fetch que distingue «no hay internet» de «la nube dijo que no». */
+function pedir(ruta, opciones){
+  const config = opciones || {};
+  return fetch(URL_BASE + "/rest/v1/" + ruta, {
+    method: config.metodo || "GET",
+    headers: Object.assign({
+      apikey: CLAVE_PUBLICA,
+      "Content-Type": "application/json",
+      Prefer: config.prefer || "return=minimal"
+    }, config.cabeceras || {}),
+    body: config.cuerpo === undefined ? undefined : JSON.stringify(config.cuerpo)
+  }).catch(() => {
+    throw new Error("Sin conexión. Se sigue trabajando con lo guardado en el aparato.");
+  }).then(respuesta => {
+    if (respuesta.status === 204) return null;
+    return respuesta.json().catch(() => null).then(cuerpo => {
+      if (!respuesta.ok) throw new Error(mensajeDeError(cuerpo, respuesta.status));
+      return cuerpo;
+    });
+  });
+}
+
+/* La tabla usa nombres con guión bajo; la app, los de siempre. */
+function deSupabase(f){
+  return {
+    id: f.uid,
+    numero: f.numero,
+    fecha: f.fecha,
+    concDeseada: Number(f.conc_deseada),
+    concActual: Number(f.conc_actual),
+    litrosActuales: Number(f.litros_actuales),
+    litrosDeseados: Number(f.litros_deseados),
+    densidad: Number(f.densidad),
+    deplecion: Number(f.deplecion),
+    litrosOrd: Number(f.litros_ord),
+    kgOrd: Number(f.kg_ord),
+    ac: Number(f.cleanwood_ac),
+    p45: Number(f.cleanwood_45),
+    borrado: f.borrado === true,
+    guardado: f.guardado,
+    tocado: f.tocado
+  };
+}
+
+function aSupabase(m){
+  return {
+    uid: m.id,
+    numero: String(m.numero),
+    fecha: m.fecha,
+    conc_deseada: m.concDeseada,
+    conc_actual: m.concActual,
+    litros_actuales: m.litrosActuales,
+    litros_deseados: m.litrosDeseados,
+    densidad: m.densidad,
+    deplecion: m.deplecion,
+    litros_ord: m.litrosOrd,
+    kg_ord: m.kgOrd,
+    cleanwood_ac: m.ac,
+    cleanwood_45: m.p45,
+    borrado: m.borrado === true,
+    guardado: m.guardado,
+    tocado: cuando(m)
+  };
+}
+
+function leerMezclasDeNube(){
+  return pedir("mezclas?select=*", { prefer: "return=representation" })
+    .then(lista => (lista || []).map(deSupabase));
+}
+
+/* Repetible: la llave es el uid del aparato, así que subir dos veces la misma
+   mezcla la actualiza en vez de duplicarla. */
+function subirMezclas(lista){
+  if (!lista.length) return Promise.resolve(null);
+  return pedir("mezclas", {
+    metodo: "POST",
+    cabeceras: { Prefer: "resolution=merge-duplicates,return=minimal" },
+    cuerpo: lista.map(aSupabase)
+  });
+}
+
+const estadoNube = { sincronizando: false, ultima: null, error: "" };
+
+/* ───────── Cálculo ───────── */
+
+function calcular(d){
+  /* B10 del Excel */
+  const litrosOrd =
+    ((d.litrosDeseados * (d.concDeseada / 100) - d.litrosActuales * (d.concActual / 100))
+      / K.ORD_DIVISOR) * K.ORD_MARGEN;
+
+  /* G10 del Excel */
+  const kgOrd = litrosOrd * d.densidad;
+
+  const delta = d.litrosDeseados - d.litrosActuales;
+
+  /* B15 y B16 del Excel */
+  const ac  = ((K.AC_PPM  * delta / K.AC_RIQUEZA)  / K.MILLON) * (1 + d.deplecion);
+  const p45 = ((K.P45_PPM * delta / K.P45_RIQUEZA) / K.MILLON) * (1 + d.deplecion);
+
+  return { litrosOrd, kgOrd, ac, p45, delta };
+}
+
+/* ───────── Formulario ───────── */
+
+const CAMPOS_NUM = [
+  ["i-cdes", "concDeseada"],
+  ["i-cact", "concActual"],
+  ["i-lact", "litrosActuales"],
+  ["i-ldes", "litrosDeseados"],
+  ["i-dens", "densidad"],
+  ["i-depl", "deplecion"]
+];
+
+const ORDEN_TAB = ["i-num", "i-cdes", "i-cact", "i-lact", "i-ldes", "i-dens", "i-depl"];
+
+function leerFormulario(){
+  const d = {};
+  let completo = true;
+
+  for (const [id, clave] of CAMPOS_NUM){
+    const el = $(id);
+    const vacio = el.value.trim() === "";
+    const v = num(el.value);
+    d[clave] = v;
+    el.classList.toggle("malo", !vacio && Number.isNaN(v));
+    if (Number.isNaN(v)) completo = false;
+  }
+
+  d.numero = $("i-num").value.trim();
+  d.fecha  = $("i-fecha").value;
+  d.completo = completo;
+  return d;
+}
+
+/* ───────── Pintar resultados ───────── */
+
+function ponerValor(elId, valor, decimales, unidad){
+  const el = $(elId);
+  if (valor === null){
+    el.className = "val vacio";
+    el.innerHTML = "—<small>" + unidad + "</small>";
+  } else {
+    el.className = "val" + (valor < 0 ? " neg" : "");
+    el.innerHTML = fmt(valor, decimales) + "<small>" + unidad + "</small>";
+  }
+}
+
+function refrescar(){
+  const d = leerFormulario();
+
+  /* Nota de litros que entran al tanque */
+  const nota = $("nota-delta");
+  if (!Number.isNaN(d.litrosActuales) && !Number.isNaN(d.litrosDeseados)){
+    const delta = d.litrosDeseados - d.litrosActuales;
+    if (delta >= 0){
+      nota.className = "nota";
+      nota.innerHTML = "Se agregan <b>" + fmt(delta, 0) + " L</b> de solución al tanque.";
+    } else {
+      nota.className = "nota aviso";
+      nota.innerHTML = "Los litros deseados (<b>" + fmt(d.litrosDeseados, 0) +
+        "</b>) son menores que los actuales (<b>" + fmt(d.litrosActuales, 0) + "</b>).";
+    }
+  } else {
+    nota.className = "nota";
+    nota.textContent = "Complete los litros para ver cuánta solución se agrega al tanque.";
+  }
+
+  if (!d.completo){
+    ponerValor("r-ord", null, 2, "L");
+    ponerValor("r-ac",  null, 2, "L");
+    ponerValor("r-p45", null, 2, "L");
+    $("r-ordkg").textContent = "Complete los datos";
+    $("r-acml").innerHTML  = "&nbsp;";
+    $("r-p45ml").innerHTML = "&nbsp;";
+    $("avisos").innerHTML = "";
+    $("b-guardar").disabled = true;
+    return null;
+  }
+
+  const r = calcular(d);
+
+  ponerValor("r-ord", r.litrosOrd, 2, "L");
+  ponerValor("r-ac",  r.ac,  2, "L");
+  ponerValor("r-p45", r.p45, 2, "L");
+
+  $("r-ordkg").innerHTML   = '<span class="ayuda">Kg a agregar</span>' + fmt(r.kgOrd, 2) + " kg";
+  $("r-acml").textContent  = fmt(r.ac  * 1000, 0) + " ml";
+  $("r-p45ml").textContent = fmt(r.p45 * 1000, 0) + " ml";
+
+  const avisos = [];
+  if (r.litrosOrd < 0){
+    avisos.push(["error", "El ORD-X170 da negativo: la concentración actual ya está por encima de la deseada. Revise el dato de laboratorio."]);
+  }
+  if (r.delta < 0){
+    avisos.push(["aviso", "Los Cleanwoods dan negativo porque el tanque baja de nivel en vez de subir."]);
+  }
+
+  $("avisos").innerHTML = avisos.length
+    ? '<div style="padding:0 18px 16px">' +
+      avisos.map(([t, m]) => '<p class="nota ' + t + '" style="margin-top:12px">' + m + "</p>").join("") +
+      "</div>"
+    : "";
+
+  $("b-guardar").disabled = false;
+  return { datos: d, resultado: r };
+}
+
+/* ───────── Guardar ───────── */
+
+function siguienteNumero(){
+  const nums = vivas().map(m => parseInt(m.numero, 10)).filter(Number.isFinite);
+  return nums.length ? Math.max.apply(null, nums) + 1 : 1;
+}
+
+function nuevoId(){
+  if (crypto && typeof crypto.randomUUID === "function") return crypto.randomUUID();
+  return "m" + Date.now() + "-" + Math.round(Math.random() * 1e9);
+}
+
+function guardar(){
+  const actual = refrescar();
+  if (!actual) return;
+
+  const { datos: d, resultado: r } = actual;
+
+  const ahora = new Date().toISOString();
+
+  mezclas.unshift({
+    id: nuevoId(),
+    numero: d.numero || String(siguienteNumero()),
+    fecha: d.fecha || fechaHoy(),
+    concDeseada: d.concDeseada,
+    concActual: d.concActual,
+    litrosActuales: d.litrosActuales,
+    litrosDeseados: d.litrosDeseados,
+    densidad: d.densidad,
+    deplecion: d.deplecion,
+    litrosOrd: r.litrosOrd,
+    kgOrd: r.kgOrd,
+    ac: r.ac,
+    p45: r.p45,
+    borrado: false,
+    guardado: ahora,
+    tocado: ahora
+  });
+
+  const ok = escribir(LLAVE_MEZCLAS, mezclas);
+  escribir(LLAVE_ULTIMOS, { densidad: $("i-dens").value, deplecion: $("i-depl").value });
+
+  pintarHistorial();
+  toast(ok ? "Mezcla guardada" : "Calculada, pero no se pudo guardar en este navegador");
+
+  /* Se sube sola. Si no hay señal queda pendiente para la próxima. */
+  sincronizar(true);
+
+  /* Deja lista la siguiente mezcla */
+  ["i-cdes", "i-cact", "i-lact", "i-ldes"].forEach(id => { $(id).value = ""; });
+  $("i-num").value   = String(siguienteNumero());
+  $("i-fecha").value = fechaHoy();
+  refrescar();
+  $("i-cdes").focus();
+}
+
+/* ───────── Historial ───────── */
+
+function pintarHistorial(){
+  pintarNube();
+
+  const lista = vivas().slice().sort((a, b) => cuando(b).localeCompare(cuando(a)));
+
+  $("pill-hist").textContent = lista.length;
+  $("hist-cuenta").textContent =
+    lista.length === 0 ? "" :
+    lista.length === 1 ? "1 mezcla guardada" : lista.length + " mezclas guardadas";
+
+  $("b-exportar").disabled    = lista.length === 0;
+  $("b-borrar-todo").disabled = lista.length === 0;
+
+  const cont = $("hist-contenido");
+
+  if (lista.length === 0){
+    cont.innerHTML =
+      '<div class="vacio-estado">' +
+        '<p class="t">Todavía no hay mezclas guardadas</p>' +
+        '<p>Calcule una mezcla y presione “Guardar mezcla”.</p>' +
+      "</div>";
+    return;
+  }
+
+  const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g,
+    c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+  const filas = lista.map(m =>
+    "<tr>" +
+      "<td><strong>" + esc(m.numero) + "</strong></td>" +
+      "<td>" + fechaCorta(m.fecha) + "</td>" +
+      "<td>" + fmt(m.concDeseada, 2) + "</td>" +
+      "<td>" + fmt(m.concActual, 2) + "</td>" +
+      "<td>" + fmt(m.litrosActuales, 0) + "</td>" +
+      "<td>" + fmt(m.litrosDeseados, 0) + "</td>" +
+      "<td>" + fmt(m.densidad, 4) + "</td>" +
+      "<td>" + fmt(m.deplecion, 2) + "</td>" +
+      '<td class="destac">' + fmt(m.litrosOrd, 2) + "</td>" +
+      "<td>" + fmt(m.kgOrd, 2) + "</td>" +
+      "<td>" + fmt(m.ac, 2) + "</td>" +
+      "<td>" + fmt(m.p45, 2) + "</td>" +
+      '<td class="acc">' +
+        '<button class="icono" data-cargar="' + esc(m.id) + '" title="Cargar en la calculadora">&#8599;</button>' +
+        '<button class="icono borrar" data-borrar="' + esc(m.id) + '" title="Borrar">&times;</button>' +
+      "</td>" +
+    "</tr>"
+  ).join("");
+
+  cont.innerHTML =
+    '<div class="tabla-wrap"><table><thead><tr>' +
+      "<th>Nº</th><th>Fecha</th>" +
+      "<th>Conc. des. %</th><th>Conc. act. %</th>" +
+      "<th>L actual</th><th>L deseado</th>" +
+      "<th>Dens. kg/L</th><th>Depleción</th>" +
+      "<th>ORD-X170 L</th><th>ORD-X170 kg</th>" +
+      "<th>Cleanwood AC L</th><th>45 Plus L</th>" +
+      "<th></th>" +
+    "</tr></thead><tbody>" + filas + "</tbody></table></div>";
+}
+
+function cargarMezcla(id){
+  const m = mezclas.find(x => x.id === id);
+  if (!m) return;
+  $("i-num").value   = m.numero;
+  $("i-fecha").value = m.fecha;
+  $("i-cdes").value  = m.concDeseada;
+  $("i-cact").value  = m.concActual;
+  $("i-lact").value  = m.litrosActuales;
+  $("i-ldes").value  = m.litrosDeseados;
+  $("i-dens").value  = m.densidad;
+  $("i-depl").value  = m.deplecion;
+  verTab("calc");
+  refrescar();
+  toast("Mezcla Nº " + m.numero + " cargada");
+}
+
+/* La mezcla NO se saca de la lista: se marca borrada y se le pone fecha nueva.
+   Es la única forma de que borrar se propague. Si se sacara del arreglo, el
+   otro aparato que todavía la tuviera la volvería a subir al sincronizar y
+   reaparecería en todos lados. Con la marca puesta hay algo que comparar, y
+   gana la fecha más nueva: la última vez que alguien la tocó. */
+function borrarMezcla(id){
+  const m = mezclas.find(x => x.id === id);
+  if (!m || m.borrado) return;
+  if (!confirm("¿Borrar la mezcla Nº " + m.numero + " del " + fechaCorta(m.fecha) + "?")) return;
+  m.borrado = true;
+  m.tocado  = new Date().toISOString();
+  escribir(LLAVE_MEZCLAS, mezclas);
+  pintarHistorial();
+  toast("Mezcla borrada");
+  sincronizar(true);
+}
+
+/* ───────── Sincronizar ─────────
+   Lo local manda para trabajar: la app funciona igual sin señal, con lo que
+   haya en el aparato. Esto solo la empareja con la nube cuando hay internet.
+
+   Al juntar las dos listas gana, mezcla por mezcla, la versión tocada más
+   recientemente. Como borrar también actualiza esa fecha, un borrado le gana a
+   una copia vieja en vez de que la copia vieja lo reviva.                    */
+
+function fusionar(remotas){
+  const mapa = new Map();
+  mezclas.forEach(m => mapa.set(m.id, m));
+
+  remotas.forEach(r => {
+    const local = mapa.get(r.id);
+    if (!local || cuando(r) > cuando(local)) mapa.set(r.id, r);
+  });
+
+  mezclas = Array.from(mapa.values());
+}
+
+function sincronizar(silencioso){
+  if (estadoNube.sincronizando) return Promise.resolve();
+
+  estadoNube.sincronizando = true;
+  estadoNube.error = "";
+  pintarNube();
+
+  return leerMezclasDeNube()
+    .then(remotas => {
+      fusionar(remotas);
+
+      /* Se sube solo lo que la nube no tiene, o lo que acá está más fresco. */
+      const enNube = new Map(remotas.map(r => [r.id, r]));
+      const pendientes = mezclas.filter(m => {
+        const r = enNube.get(m.id);
+        return !r || cuando(m) > cuando(r);
+      });
+
+      return subirMezclas(pendientes).then(() => pendientes.length);
+    })
+    .then(subidas => {
+      escribir(LLAVE_MEZCLAS, mezclas);
+      estadoNube.ultima = new Date().toISOString();
+      estadoNube.error  = "";
+      pintarHistorial();
+      if (!silencioso){
+        toast(subidas ? "Sincronizado · " + subidas + " subidas" : "Sincronizado");
+      }
+    })
+    .catch(e => {
+      estadoNube.error = e.message;
+      if (!silencioso) toast(e.message);
+    })
+    .then(() => {
+      estadoNube.sincronizando = false;
+      pintarNube();
+    });
+}
+
+function haceCuanto(iso){
+  const seg = Math.round((Date.now() - new Date(iso).getTime()) / 1000);
+  if (seg < 60)   return "hace un momento";
+  if (seg < 3600) return "hace " + Math.floor(seg / 60) + " min";
+  if (seg < 86400) return "hace " + Math.floor(seg / 3600) + " h";
+  return "hace " + Math.floor(seg / 86400) + " d";
+}
+
+/* Solo el color. Lo que significa va en el title, que sale al pasar el mouse
+   por encima y es lo que leen los lectores de pantalla. */
+function pintarNube(){
+  const punto = $("nube-punto");
+  if (!punto) return;
+
+  let clase, detalle;
+
+  if (estadoNube.sincronizando){
+    clase = "punto trabajando";
+    detalle = "Sincronizando…";
+  } else if (estadoNube.error){
+    clase = "punto mal";
+    detalle = estadoNube.error;
+  } else if (estadoNube.ultima){
+    clase = "punto bien";
+    detalle = "Al día · " + haceCuanto(estadoNube.ultima);
+  } else {
+    clase = "punto";
+    detalle = "Se sincroniza sola al abrir la app.";
+  }
+
+  punto.className = clase;
+  punto.title = detalle;
+  punto.setAttribute("aria-label", "Sincronización: " + detalle);
+}
+
+/* ───────── Exportar ─────────
+   CSV con separador ";" y decimales con coma, que es como lo abre
+   Excel con configuración regional de Costa Rica.                  */
+function exportar(){
+  const lista = vivas().slice().sort((a, b) => cuando(a).localeCompare(cuando(b)));
+  if (lista.length === 0) return;
+
+  const cols = [
+    "Nº de mezcla", "Fecha",
+    "Concentración de ORD-X170 deseada (%)",
+    "Concentración de ORD-X170 actual, laboratorio (%)",
+    "Litros de solución en tanque actual",
+    "Litros de solución deseado en el tanque",
+    "Litros agregados",
+    "Densidad activa (kg/L)",
+    "Factor de depleción de los Cleanwoods",
+    "Litros de ORD-X170 para agregar",
+    "Kg de ORD-X170 para agregar",
+    "Litros de Cleanwood AC para agregar",
+    "Litros de Cleanwood 45 Plus para agregar",
+    "Guardado"
+  ];
+
+  const txt = s => '"' + String(s).replace(/"/g, '""') + '"';
+
+  const filas = lista.map(m => [
+    txt(m.numero),
+    txt(fechaCorta(m.fecha)),
+    fmt(m.concDeseada, 2),
+    fmt(m.concActual, 2),
+    fmt(m.litrosActuales, 0),
+    fmt(m.litrosDeseados, 0),
+    fmt(m.litrosDeseados - m.litrosActuales, 0),
+    fmt(m.densidad, 4),
+    fmt(m.deplecion, 2),
+    fmt(m.litrosOrd, 2),
+    fmt(m.kgOrd, 2),
+    fmt(m.ac, 2),
+    fmt(m.p45, 2),
+    txt(new Date(m.guardado).toLocaleString("es-CR"))
+  ].join(";"));
+
+  const csv = "sep=;\n" + cols.map(txt).join(";") + "\n" + filas.join("\n");
+
+  const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement("a");
+  a.href = url;
+  a.download = "mezclas-micro-pro-" + fechaHoy() + ".csv";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  toast("Archivo descargado");
+}
+
+/* ───────── Navegación ───────── */
+
+function verTab(cual){
+  const esCalc = cual === "calc";
+  $("v-calc").classList.toggle("oculto", !esCalc);
+  $("v-hist").classList.toggle("oculto",  esCalc);
+  $("tab-calc").setAttribute("aria-selected", String(esCalc));
+  $("tab-hist").setAttribute("aria-selected", String(!esCalc));
+  window.scrollTo({ top: 0 });
+}
+
+/* ───────── Arranque ───────── */
+
+function limpiar(){
+  ["i-cdes", "i-cact", "i-lact", "i-ldes"].forEach(id => { $(id).value = ""; });
+  $("i-dens").value  = ultimos.densidad  || INICIALES.densidad;
+  $("i-depl").value  = ultimos.deplecion || INICIALES.deplecion;
+  $("i-num").value   = String(siguienteNumero());
+  $("i-fecha").value = fechaHoy();
+  refrescar();
+  $("i-cdes").focus();
+}
+
+function iniciar(){
+  $("i-num").value   = String(siguienteNumero());
+  $("i-fecha").value = fechaHoy();                                  // era =NOW()
+  $("i-dens").value  = ultimos.densidad  || INICIALES.densidad;
+  $("i-depl").value  = ultimos.deplecion || INICIALES.deplecion;
+
+  document.querySelectorAll("input").forEach(el => {
+    el.addEventListener("input", refrescar);
+  });
+
+  /* Enter avanza al siguiente campo; en el último, guarda. */
+  ORDEN_TAB.forEach((id, i) => {
+    $(id).addEventListener("keydown", e => {
+      if (e.key !== "Enter") return;
+      e.preventDefault();
+      if (i < ORDEN_TAB.length - 1) $(ORDEN_TAB[i + 1]).focus();
+      else if (!$("b-guardar").disabled) guardar();
+    });
+  });
+
+  $("tab-calc").addEventListener("click", () => verTab("calc"));
+  $("tab-hist").addEventListener("click", () => verTab("hist"));
+
+  $("b-guardar").addEventListener("click", guardar);
+  $("b-limpiar").addEventListener("click", limpiar);
+  $("b-exportar").addEventListener("click", exportar);
+
+  $("b-borrar-todo").addEventListener("click", () => {
+    const cuantas = vivas().length;
+    if (cuantas === 0) return;
+    if (!confirm("¿Borrar las " + cuantas + " mezclas del historial?\n\n" +
+                 "Se borran también en los demás dispositivos. " +
+                 "Considere exportar a Excel primero.")) return;
+    const ahora = new Date().toISOString();
+    vivas().forEach(m => { m.borrado = true; m.tocado = ahora; });
+    escribir(LLAVE_MEZCLAS, mezclas);
+    pintarHistorial();
+    toast("Historial borrado");
+    sincronizar(true);
+  });
+
+  $("hist-contenido").addEventListener("click", e => {
+    const b = e.target.closest("button");
+    if (!b) return;
+    if (b.dataset.cargar) cargarMezcla(b.dataset.cargar);
+    if (b.dataset.borrar) borrarMezcla(b.dataset.borrar);
+  });
+
+  pintarHistorial();
+  refrescar();
+
+  /* Se sincroniza sola al abrir, y cada vez que vuelve la señal. */
+  sincronizar(true);
+  window.addEventListener("online", () => sincronizar(true));
+}
+
+iniciar();
+</script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+# Configuración local de Claude Code, no va al repositorio
+.claude/
+
+# Basura de Windows y OneDrive
+desktop.ini
+Thumbs.db
+$RECYCLE.BIN/
+*.tmp
+~$*
